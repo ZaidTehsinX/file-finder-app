@@ -6,19 +6,23 @@
 }
 
 .footer-content {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .footer-text {
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   font-size: 0.95rem;
   color: #f0f0f0;
   font-weight: 500;
@@ -38,6 +42,72 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+.tech-icons-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tech-icon-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  cursor: default;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tech-icon-mini:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tech-icon-mini.react:hover {
+  background: linear-gradient(135deg, #61dafb 0%, #06b6d4 100%);
+  border-color: #06b6d4;
+  box-shadow: 0 8px 20px rgba(97, 218, 251, 0.4);
+}
+
+.tech-icon-mini.typescript:hover {
+  background: linear-gradient(135deg, #3178c6 0%, #1e40af 100%);
+  border-color: #1e40af;
+  color: white;
+  box-shadow: 0 8px 20px rgba(49, 120, 198, 0.4);
+}
+
+.tech-icon-mini.tailwind:hover {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  border-color: #0891b2;
+  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4);
+}
+
+.tech-icon-mini.nodejs:hover {
+  background: linear-gradient(135deg, #68a063 0%, #4f9a5a 100%);
+  border-color: #4f9a5a;
+  box-shadow: 0 8px 20px rgba(104, 160, 99, 0.4);
+}
+
+.tech-icon-mini.express:hover {
+  background: linear-gradient(135deg, #333333 0%, #1f2937 100%);
+  border-color: #1f2937;
+  color: white;
+  box-shadow: 0 8px 20px rgba(51, 51, 51, 0.4);
+}
+
+.tech-icon-mini.sqlite:hover {
+  background: linear-gradient(135deg, #003b57 0%, #001d2e 100%);
+  border-color: #001d2e;
+  box-shadow: 0 8px 20px rgba(0, 59, 87, 0.4);
+}
+
 .footer-year {
   margin: 0;
   font-size: 0.85rem;
@@ -50,7 +120,7 @@
   }
 
   .footer-content {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .footer-text {
@@ -59,5 +129,15 @@
 
   .footer-year {
     font-size: 0.8rem;
+  }
+
+  .tech-icons-footer {
+    gap: 8px;
+  }
+
+  .tech-icon-mini {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95em;
   }
 }
