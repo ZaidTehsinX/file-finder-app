@@ -37,21 +37,9 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   // Filter based on mode
   const getFilteredFolders = () => {
     if (filterMode === 'with') {
-      return [
-        ...results.foldersWithFile,
-        ...results.foldersWithoutFile,
-      ].sort((a, b) => {
-        if (a.hasFile === b.hasFile) return a.folderPath.localeCompare(b.folderPath);
-        return a.hasFile ? -1 : 1;
-      });
+      return results.foldersWithFile.sort((a, b) => a.folderPath.localeCompare(b.folderPath));
     } else if (filterMode === 'without') {
-      return [
-        ...results.foldersWithFile,
-        ...results.foldersWithoutFile,
-      ].sort((a, b) => {
-        if (a.hasFile === b.hasFile) return a.folderPath.localeCompare(b.folderPath);
-        return a.hasFile ? 1 : -1;
-      });
+      return results.foldersWithoutFile.sort((a, b) => a.folderPath.localeCompare(b.folderPath));
     }
     return allFolders;
   };
@@ -213,6 +201,32 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         <button className="scroll-btn scroll-down" onClick={scrollToBottom} title="Scroll to bottom">
           ⬇️
         </button>
+      </div>
+
+      <div className="results-footer">
+        <div className="footer-content">
+          <p className="footer-text">Created by <span className="footer-author">Zaid Tehsin</span></p>
+          <div className="tech-icons">
+            <a href="https://react.dev" title="React" className="tech-icon react">
+              ⚛️
+            </a>
+            <a href="https://www.typescriptlang.org" title="TypeScript" className="tech-icon typescript">
+              TS
+            </a>
+            <a href="https://tailwindcss.com" title="Tailwind CSS" className="tech-icon tailwind">
+              🎨
+            </a>
+            <a href="https://nodejs.org" title="Node.js" className="tech-icon nodejs">
+              🟢
+            </a>
+            <a href="https://expressjs.com" title="Express.js" className="tech-icon express">
+              ⚡
+            </a>
+            <a href="https://www.sqlite.org" title="SQLite" className="tech-icon sqlite">
+              🗄️
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
