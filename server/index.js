@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import db from './db.js';
 import { scanFolderRecursive, searchFiles } from './fileScanner.js';
 
@@ -15,22 +14,25 @@ app.use(express.json());
 // Get all available drives
 function getAvailableDrives() {
   try {
-    // Run 'fsutil fsinfo drives' to get list of drives on Windows
-    const output = execSync('fsutil fsinfo drives', { encoding: 'utf-8' });
     const drives = [];
-    const lines = output.split('\n');
-    
-    for (const line of lines) {
-      const match = line.match(/([A-Z]:\\)/);
-      if (match) {
-        drives.push(match[1]);
+    // Check common drive letters A-Z
+    for (let i = 65; i <= 90; i++) {
+      const driveLetter = String.fromCharCode(i);
+      const drivePath = `${driveLetter}:\\`;
+      
+      try {
+        if (fs.existsSync(drivePath)) {
+          drives.push(drivePath);
+        }
+      } catch (err) {
+        // Drive doesn't exist, skip it
       }
     }
     
-    return drives.length > 0 ? drives : ['C:\\', 'D:\\', 'E:\\', 'F:\\'];
+    return drives.length > 0 ? drives : ['C:\\'];
   } catch (error) {
     console.error('Error getting drives:', error);
-    return ['C:\\', 'D:\\', 'E:\\', 'F:\\'];
+    return ['C:\\'];
   }
 }
 

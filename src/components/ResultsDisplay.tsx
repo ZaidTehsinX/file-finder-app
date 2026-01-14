@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { SearchStats } from '../utils/fileSearch';
 import { formatFileSize } from '../utils/fileSearch';
 import './ResultsDisplay.css';
@@ -9,92 +9,187 @@ interface ResultsDisplayProps {
   onReset: () => void;
 }
 
-type ViewMode = 'list' | 'compact';
-
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   results,
   filename,
   onReset,
 }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [filterMode, setFilterMode] = useState<'all' | 'with' | 'without'>('all');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const toggleFolder = (folderPath: string) => {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(folderPath)) {
+      newExpanded.delete(folderPath);
+    } else {
+      newExpanded.add(folderPath);
+    }
+    setExpandedFolders(newExpanded);
+  };
+
+  // Combine both with and without file folders
+  const allFolders = [
+    ...results.foldersWithFile,
+    ...results.foldersWithoutFile,
+  ].sort((a, b) => a.folderPath.localeCompare(b.folderPath));
+
+  // Filter based on mode
+  const getFilteredFolders = () => {
+    if (filterMode === 'with') {
+      return [
+        ...results.foldersWithFile,
+        ...results.foldersWithoutFile,
+      ].sort((a, b) => {
+        if (a.hasFile === b.hasFile) return a.folderPath.localeCompare(b.folderPath);
+        return a.hasFile ? -1 : 1;
+      });
+    } else if (filterMode === 'without') {
+      return [
+        ...results.foldersWithFile,
+        ...results.foldersWithoutFile,
+      ].sort((a, b) => {
+        if (a.hasFile === b.hasFile) return a.folderPath.localeCompare(b.folderPath);
+        return a.hasFile ? 1 : -1;
+      });
+    }
+    return allFolders;
+  };
+
+  const displayedFolders = getFilteredFolders();
+
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
-    <div className="results-container">
-      <div className="results-header">
-        <h2>Search Results for: <span className="filename">{filename}</span></h2>
-        
-        <div className="results-controls">
-          <div className="view-mode-selector">
-            <label>View as:</label>
-            <select 
-              value={viewMode} 
-              onChange={(e) => setViewMode(e.target.value as ViewMode)}
-              className="view-mode-select"
-            >
-              <option value="list">Detailed List</option>
-              <option value="compact">Compact View</option>
-            </select>
+    <div className="results-fullscreen">
+      <div className="results-header-modern">
+        <div className="header-content">
+          <div className="header-title">
+            <h1>Search Results</h1>
+            <div className="search-term">
+              <span className="search-label">Searching for:</span>
+              <span className="search-value">{filename}</span>
+            </div>
+          </div>
+          <button onClick={onReset} className="btn-new-search">
+            <span className="icon">🔄</span>
+            <span>New Search</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="results-stats-modern">
+        <div className="stat-card">
+          <div className="stat-icon">📂</div>
+          <div className="stat-info">
+            <div className="stat-number">{results.totalFoldersWithFile + results.totalFoldersWithoutFile}</div>
+            <div className="stat-label">Total Folders</div>
+          </div>
+        </div>
+        <div className="stat-card success">
+          <div className="stat-icon">✓</div>
+          <div className="stat-info">
+            <div className="stat-number">{results.totalFoldersWithFile}</div>
+            <div className="stat-label">With Results</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">○</div>
+          <div className="stat-info">
+            <div className="stat-number">{results.totalFoldersWithoutFile}</div>
+            <div className="stat-label">Without Results</div>
+          </div>
+        </div>
+        <div className="stat-card primary">
+          <div className="stat-icon">📄</div>
+          <div className="stat-info">
+            <div className="stat-number">{results.totalFilesFound}</div>
+            <div className="stat-label">Files Found</div>
           </div>
         </div>
       </div>
 
-      <div className="results-summary">
-        <div className="summary-stat">
-          <span className="stat-label">Folders Scanned</span>
-          <span className="stat-value">{results.totalFoldersScanned}</span>
-        </div>
-        <div className="summary-stat highlight">
-          <span className="stat-label">With File</span>
-          <span className="stat-value success">{results.totalFoldersWithFile}</span>
-        </div>
-        <div className="summary-stat highlight">
-          <span className="stat-label">Without File</span>
-          <span className="stat-value">{results.totalFoldersWithoutFile}</span>
-        </div>
-        <div className="summary-stat">
-          <span className="stat-label">Total Files Found</span>
-          <span className="stat-value">{results.totalFilesFound}</span>
-        </div>
+      <div className="filter-buttons">
+        <button
+          className={`filter-btn ${filterMode === 'all' ? 'active' : ''}`}
+          onClick={() => setFilterMode('all')}
+        >
+          📋 All Results
+        </button>
+        <button
+          className={`filter-btn with-results ${filterMode === 'with' ? 'active' : ''}`}
+          onClick={() => setFilterMode('with')}
+        >
+          ✓ With Results
+        </button>
+        <button
+          className={`filter-btn without-results ${filterMode === 'without' ? 'active' : ''}`}
+          onClick={() => setFilterMode('without')}
+        >
+          ○ Without Results
+        </button>
       </div>
 
-      {viewMode === 'list' ? (
-        <DetailedListView results={results} />
-      ) : (
-        <CompactView results={results} />
-      )}
-
-      <button onClick={onReset} className="btn-reset">
-        ← New Search
-      </button>
-    </div>
-  );
-};
-
-const DetailedListView: React.FC<{ results: SearchStats }> = ({ results }) => {
-  return (
-    <div className="results-content">
-      <div className="results-section">
-        <div className="section-header with-file">
-          <h3>✓ Folders With File ({results.totalFoldersWithFile})</h3>
-        </div>
-        
-        {results.foldersWithFile.length > 0 ? (
-          <div className="folders-list">
-            {results.foldersWithFile.map((folder, index) => (
-              <div key={index} className="folder-result with-file-result">
-                <div className="folder-path-display">
-                  <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
-                  <span className="folder-path">{folder.folderPath}</span>
+      <div className="results-list-container" ref={scrollContainerRef}>
+        {displayedFolders.length > 0 ? (
+          <div className="modern-results-list">
+            {displayedFolders.map((folder, index) => (
+              <div 
+                key={index} 
+                className={`result-item ${folder.hasFile ? 'has-file' : 'no-file'}`}
+              >
+                <div 
+                  className="result-header"
+                  onClick={() => folder.foundFiles.length > 0 && toggleFolder(folder.folderPath)}
+                >
+                  <div className="result-header-left">
+                    {folder.foundFiles.length > 0 && (
+                      <span className={`expand-icon ${expandedFolders.has(folder.folderPath) ? 'expanded' : ''}`}>
+                        ▶
+                      </span>
+                    )}
+                    {!folder.foundFiles.length && <span className="expand-icon empty">•</span>}
+                    
+                    <span className={`folder-badge ${folder.hasFile ? 'with-file' : 'without-file'}`}>
+                      {folder.hasFile ? '✓ Found' : '○ Not Found'}
+                    </span>
+                  </div>
+                  <div className="result-header-middle">
+                    <div className="folder-path-modern">{folder.folderPath}</div>
+                    {folder.foundFiles.length > 0 && (
+                      <div className="file-count">{folder.foundFiles.length} file(s)</div>
+                    )}
+                  </div>
+                  <div className="result-header-right">
+                    {folder.foundFiles.length > 0 && (
+                      <span className="file-badge">{folder.foundFiles.length}</span>
+                    )}
+                  </div>
                 </div>
-                {folder.foundFiles.length > 0 && (
-                  <div className="files-found">
+
+                {folder.foundFiles.length > 0 && expandedFolders.has(folder.folderPath) && (
+                  <div className="result-files">
                     {folder.foundFiles.map((file, fileIndex) => (
-                      <div key={fileIndex} className="file-entry">
+                      <div key={fileIndex} className="file-item">
                         <span className="file-icon">📄</span>
-                        <span className="file-details">
+                        <div className="file-info">
                           <span className="file-name">{file.name}</span>
                           <span className="file-size">{formatFileSize(file.size)}</span>
-                        </span>
+                        </div>
+                        <span className="file-path" title={file.path}>{file.path}</span>
                       </div>
                     ))}
                   </div>
@@ -103,76 +198,21 @@ const DetailedListView: React.FC<{ results: SearchStats }> = ({ results }) => {
             ))}
           </div>
         ) : (
-          <p className="empty-message">No folders found with the file</p>
-        )}
-      </div>
-
-      <div className="results-section">
-        <div className="section-header without-file">
-          <h3>✗ Folders Without File ({results.totalFoldersWithoutFile})</h3>
-        </div>
-        
-        {results.foldersWithoutFile.length > 0 ? (
-          <div className="folders-list">
-            {results.foldersWithoutFile.map((folder, index) => (
-              <div key={index} className="folder-result without-file-result">
-                <div className="folder-path-display">
-                  <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
-                  <span className="folder-path">{folder.folderPath}</span>
-                </div>
-              </div>
-            ))}
+          <div className="no-results">
+            <div className="no-results-icon">🔍</div>
+            <h3>No folders found</h3>
+            <p>Try searching with a different term</p>
           </div>
-        ) : (
-          <p className="empty-message">All folders contain the file</p>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const CompactView: React.FC<{ results: SearchStats }> = ({ results }) => {
-  return (
-    <div className="results-content compact">
-      <div className="results-section">
-        <div className="section-header with-file">
-          <h3>✓ With File ({results.totalFoldersWithFile})</h3>
-        </div>
-        
-        {results.foldersWithFile.length > 0 ? (
-          <ul className="compact-list">
-            {results.foldersWithFile.map((folder, index) => (
-              <li key={index} className="compact-item with-file">
-                <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
-                <span className="item-path">{folder.folderPath}</span>
-                <span className="file-count">
-                  {folder.foundFiles.length} file{folder.foundFiles.length !== 1 ? 's' : ''}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="empty-message">No folders found with the file</p>
         )}
       </div>
 
-      <div className="results-section">
-        <div className="section-header without-file">
-          <h3>✗ Without File ({results.totalFoldersWithoutFile})</h3>
-        </div>
-        
-        {results.foldersWithoutFile.length > 0 ? (
-          <ul className="compact-list">
-            {results.foldersWithoutFile.map((folder, index) => (
-              <li key={index} className="compact-item without-file">
-                <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
-                <span className="item-path">{folder.folderPath}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="empty-message">All folders contain the file</p>
-        )}
+      <div className="scroll-buttons">
+        <button className="scroll-btn scroll-up" onClick={scrollToTop} title="Scroll to top">
+          ⬆️
+        </button>
+        <button className="scroll-btn scroll-down" onClick={scrollToBottom} title="Scroll to bottom">
+          ⬇️
+        </button>
       </div>
     </div>
   );

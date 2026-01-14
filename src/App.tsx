@@ -76,15 +76,20 @@ function App() {
 
         {errorMessage && (
           <div style={{
-            backgroundColor: '#fee',
-            color: '#c33',
-            padding: '15px',
-            borderRadius: '8px',
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%)',
+            color: 'white',
+            padding: '18px 24px',
+            borderRadius: '12px',
             marginBottom: '20px',
             textAlign: 'center',
-            maxWidth: '600px'
+            maxWidth: '600px',
+            fontSize: '0.95rem',
+            fontWeight: 500,
+            boxShadow: '0 6px 20px rgba(239, 68, 68, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            animation: 'slideInDown 0.4s ease-out'
           }}>
-            <strong>Error:</strong> {errorMessage}
+            <strong>⚠️ Error:</strong> {errorMessage}
           </div>
         )}
 

@@ -82,6 +82,14 @@ export async function searchFiles(db, folderPath, searchTerm) {
     };
   }
 
+  // Get all unique folders that were scanned
+  const allFoldersResult = await db.all(
+    `SELECT DISTINCT folderPath FROM files WHERE scanId = ? ORDER BY folderPath`,
+    [scan.id]
+  );
+
+  const allFolders = new Set(allFoldersResult.map(row => row.folderPath));
+
   // Search for PDF files matching the search term (case-insensitive)
   const searchPattern = `%${searchTerm.toLowerCase()}%`;
   const files = await db.all(
@@ -101,20 +109,32 @@ export async function searchFiles(db, folderPath, searchTerm) {
     filesByFolder[file.folderPath].push(file);
   }
 
-  return {
-    foldersWithFile: Object.entries(filesByFolder).map(([folderPath, folderFiles]) => ({
+  // Create foldersWithFile array
+  const foldersWithFileArray = Object.entries(filesByFolder).map(([folderPath, folderFiles]) => ({
+    folderPath,
+    hasFile: true,
+    foundFiles: folderFiles.map(f => ({
+      name: f.fileName,
+      size: f.fileSize,
+      path: f.filePath
+    }))
+  }));
+
+  // Create foldersWithoutFile array - all folders not in filesByFolder
+  const foldersWithoutFileArray = Array.from(allFolders)
+    .filter(folderPath => !filesByFolder[folderPath])
+    .map(folderPath => ({
       folderPath,
-      hasFile: true,
-      foundFiles: folderFiles.map(f => ({
-        name: f.fileName,
-        size: f.fileSize,
-        path: f.filePath
-      }))
-    })),
-    foldersWithoutFile: [],
-    totalFoldersScanned: 0,
-    totalFoldersWithFile: Object.keys(filesByFolder).length,
-    totalFoldersWithoutFile: 0,
+      hasFile: false,
+      foundFiles: []
+    }));
+
+  return {
+    foldersWithFile: foldersWithFileArray,
+    foldersWithoutFile: foldersWithoutFileArray,
+    totalFoldersScanned: allFolders.size,
+    totalFoldersWithFile: foldersWithFileArray.length,
+    totalFoldersWithoutFile: foldersWithoutFileArray.length,
     totalFilesFound: files.length
   };
 }
