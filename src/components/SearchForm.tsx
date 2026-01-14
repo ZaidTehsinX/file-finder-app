@@ -6,6 +6,15 @@ interface SearchFormProps {
   isLoading: boolean;
 }
 
+declare global {
+  interface Window {
+    showDirectoryPicker(options?: {
+      mode?: 'read' | 'readwrite';
+      startIn?: FileSystemHandle;
+    }): Promise<FileSystemDirectoryHandle>;
+  }
+}
+
 const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [filename, setFilename] = useState('');
@@ -15,10 +24,10 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
 
   const handleSelectFolders = async () => {
     try {
-      const folderHandles = await (window as any).showDirectoryPicker({
+      const folderHandle = await window.showDirectoryPicker({
         mode: 'read',
       });
-      setSelectedFolders([folderHandles]);
+      setSelectedFolders([folderHandle]);
     } catch (error) {
       console.error('Error selecting folder:', error);
     }
@@ -26,7 +35,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
 
   const handleAddMoreFolders = async () => {
     try {
-      const folderHandle = await (window as any).showDirectoryPicker({
+      const folderHandle = await window.showDirectoryPicker({
         mode: 'read',
       });
       setSelectedFolders([...selectedFolders, folderHandle]);

@@ -17,6 +17,9 @@ export interface SearchStats {
   foldersWithoutFile: SearchResult[];
 }
 
+// Type for FileSystemDirectoryHandle with async iterator
+type FileSystemDirectoryHandleWithIterator = FileSystemDirectoryHandle & AsyncIterable<FileSystemHandle>;
+
 // Convert wildcard pattern to regex
 function wildcardToRegex(wildcard: string): RegExp {
   const escaped = wildcard
@@ -75,7 +78,8 @@ async function scanFolder(
   const foundFiles: SearchResult['foundFiles'] = [];
 
   try {
-    for await (const entry of handle.values()) {
+    // Cast to async iterable to access the async iterator
+    for await (const entry of (handle as FileSystemDirectoryHandleWithIterator)) {
       // Skip hidden files/folders
       if (entry.name.startsWith('.')) {
         continue;

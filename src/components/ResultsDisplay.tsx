@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { SearchStats, formatFileSize } from '../utils/fileSearch';
+import type { SearchStats } from '../utils/fileSearch';
+import { formatFileSize } from '../utils/fileSearch';
 import './ResultsDisplay.css';
 
 interface ResultsDisplayProps {
