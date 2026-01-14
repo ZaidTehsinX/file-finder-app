@@ -26,17 +26,45 @@
     0 4px 15px rgba(0, 0, 0, 0.3),
     0 2px 8px rgba(0, 0, 0, 0.2);
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
-  animation: glowPulse 3s ease-in-out infinite;
+  animation: gradientSweep 5s ease-in-out infinite;
   position: relative;
   font-weight: 900;
+  background: linear-gradient(90deg, #ff8c00 0%, #ffd700 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .file-word {
-  animation: float-up 3s ease-in-out infinite, glowPulse 3s ease-in-out infinite;
+  animation: float-up 3s ease-in-out infinite, gradientSweep 5s ease-in-out infinite;
 }
 
 .finder-word {
-  animation: float-down 3s ease-in-out infinite, glowPulse 3s ease-in-out infinite;
+  animation: float-down 3s ease-in-out infinite, gradientSweep 5s ease-in-out infinite;
+}
+
+@keyframes gradientSweep {
+  0% {
+    background-position: -200% 0;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+  }
+  60% {
+    background-position: 100% 0;
+    filter: drop-shadow(0 6px 12px rgba(255, 140, 0, 0.4));
+  }
+  75% {
+    background-position: 100% 0;
+    color: #ffffff;
+    -webkit-text-fill-color: white;
+    filter: drop-shadow(0 6px 20px rgba(255, 255, 255, 0.5));
+  }
+  100% {
+    background-position: 100% 0;
+    -webkit-text-fill-color: white;
+    color: #ffffff;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+  }
 }
 
 @keyframes glowPulse {
