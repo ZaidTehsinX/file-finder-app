@@ -206,24 +206,25 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       <div className="results-footer">
         <div className="footer-content">
           <p className="footer-text">Created by <span className="footer-author">Zaid Tehsin</span></p>
+          <div className="tech-stack-divider">•</div>
           <div className="tech-icons">
-            <a href="https://react.dev" title="React" className="tech-icon react">
-              ⚛️
+            <a href="https://react.dev" title="React" className="tech-icon react" aria-label="React">
+              <span className="tech-icon-label">React</span>
             </a>
-            <a href="https://www.typescriptlang.org" title="TypeScript" className="tech-icon typescript">
-              TS
+            <a href="https://www.typescriptlang.org" title="TypeScript" className="tech-icon typescript" aria-label="TypeScript">
+              <span className="tech-icon-label">TypeScript</span>
             </a>
-            <a href="https://tailwindcss.com" title="Tailwind CSS" className="tech-icon tailwind">
-              🎨
+            <a href="https://tailwindcss.com" title="Tailwind CSS" className="tech-icon tailwind" aria-label="Tailwind CSS">
+              <span className="tech-icon-label">Tailwind</span>
             </a>
-            <a href="https://nodejs.org" title="Node.js" className="tech-icon nodejs">
-              🟢
+            <a href="https://nodejs.org" title="Node.js" className="tech-icon nodejs" aria-label="Node.js">
+              <span className="tech-icon-label">Node.js</span>
             </a>
-            <a href="https://expressjs.com" title="Express.js" className="tech-icon express">
-              ⚡
+            <a href="https://expressjs.com" title="Express.js" className="tech-icon express" aria-label="Express">
+              <span className="tech-icon-label">Express</span>
             </a>
-            <a href="https://www.sqlite.org" title="SQLite" className="tech-icon sqlite">
-              🗄️
+            <a href="https://www.sqlite.org" title="SQLite" className="tech-icon sqlite" aria-label="SQLite">
+              <span className="tech-icon-label">SQLite</span>
             </a>
           </div>
         </div>
