@@ -26,44 +26,43 @@
     0 4px 15px rgba(0, 0, 0, 0.3),
     0 2px 8px rgba(0, 0, 0, 0.2);
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
-  animation: gradientSweep 8s ease-in-out infinite;
+  animation: colorGlowPulse 6s ease-in-out infinite;
   position: relative;
   font-weight: 900;
-  background: linear-gradient(90deg, #9D4EDD 0%, #3A86FF 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .file-word {
-  animation: float-up 3s ease-in-out infinite, gradientSweep 8s ease-in-out infinite;
+  animation: float-up 3s ease-in-out infinite, colorGlowPulse 6s ease-in-out infinite;
 }
 
 .finder-word {
-  animation: float-down 3s ease-in-out infinite, gradientSweep 8s ease-in-out infinite;
+  animation: float-down 3s ease-in-out infinite, colorGlowPulse 6s ease-in-out infinite;
 }
 
-@keyframes gradientSweep {
-  0% {
-    background-position: -200% 0;
+@keyframes colorGlowPulse {
+  0%, 100% {
+    text-shadow: 
+      0 4px 15px rgba(0, 0, 0, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2);
     filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+  }
+  25% {
+    text-shadow: 
+      0 6px 25px rgba(157, 78, 221, 0.6),
+      0 3px 12px rgba(157, 78, 221, 0.4);
+    filter: drop-shadow(0 8px 20px rgba(157, 78, 221, 0.5));
   }
   50% {
-    background-position: 100% 0;
-    filter: drop-shadow(0 6px 20px rgba(157, 78, 221, 0.4));
+    text-shadow: 
+      0 6px 25px rgba(255, 215, 0, 0.6),
+      0 3px 12px rgba(255, 215, 0, 0.4);
+    filter: drop-shadow(0 8px 20px rgba(255, 215, 0, 0.5));
   }
   75% {
-    background-position: 100% 0;
-    color: #ffffff;
-    -webkit-text-fill-color: white;
-    filter: drop-shadow(0 6px 20px rgba(255, 255, 255, 0.5));
-  }
-  100% {
-    background-position: 100% 0;
-    -webkit-text-fill-color: white;
-    color: #ffffff;
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+    text-shadow: 
+      0 6px 25px rgba(58, 134, 255, 0.6),
+      0 3px 12px rgba(58, 134, 255, 0.4);
+    filter: drop-shadow(0 8px 20px rgba(58, 134, 255, 0.5));
   }
 }
 
@@ -96,11 +95,4 @@
   50% {
     transform: translateY(20px);
   }
-}
-
-.animated-heading:hover .word {
-  animation-duration: 2s;
-  text-shadow: 
-    0 6px 25px rgba(0, 0, 0, 0.4),
-    0 3px 12px rgba(0, 0, 0, 0.3);
 }
