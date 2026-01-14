@@ -71,9 +71,17 @@ db.exec(`
     FOREIGN KEY (scanId) REFERENCES scans(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS folders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    scanId INTEGER NOT NULL,
+    folderPath TEXT NOT NULL,
+    FOREIGN KEY (scanId) REFERENCES scans(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_files_scanId ON files(scanId);
   CREATE INDEX IF NOT EXISTS idx_files_fileName ON files(fileName);
   CREATE INDEX IF NOT EXISTS idx_files_folderPath ON files(folderPath);
+  CREATE INDEX IF NOT EXISTS idx_folders_scanId ON folders(scanId);
 `).catch(err => console.log('Tables might already exist:', err.message));
 
 export default db;

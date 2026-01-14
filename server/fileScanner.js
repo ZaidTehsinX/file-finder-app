@@ -5,10 +5,11 @@ export async function scanFolderRecursive(folderPath, db, scanId) {
   let totalFiles = 0;
   let totalFolders = 0;
   const fileRecords = [];
+  const allFoldersSet = new Set();
 
   async function scanDir(dirPath, depth = 0) {
     try {
-      totalFolders++;
+      allFoldersSet.add(dirPath);
       const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
       for (const entry of entries) {
@@ -47,6 +48,7 @@ export async function scanFolderRecursive(folderPath, db, scanId) {
   }
 
   await scanDir(folderPath);
+  totalFolders = allFoldersSet.size;
 
   // Batch insert file records
   if (fileRecords.length > 0) {
@@ -66,6 +68,14 @@ export async function scanFolderRecursive(folderPath, db, scanId) {
     }
   }
 
+  // Insert all folders into the folders table
+  for (const folderPath of allFoldersSet) {
+    await db.run(
+      `INSERT INTO folders (scanId, folderPath) VALUES (?, ?)`,
+      [scanId, folderPath]
+    );
+  }
+
   return { totalFolders, totalFiles };
 }
 
@@ -81,9 +91,9 @@ export async function searchFiles(db, folderPath, searchTerm) {
     };
   }
 
-  // Get all unique folders that were scanned
+  // Get all unique folders that were scanned from the folders table
   const allFoldersResult = await db.all(
-    `SELECT DISTINCT folderPath FROM files WHERE scanId = ? ORDER BY folderPath`,
+    `SELECT DISTINCT folderPath FROM folders WHERE scanId = ? ORDER BY folderPath`,
     [scan.id]
   );
 
