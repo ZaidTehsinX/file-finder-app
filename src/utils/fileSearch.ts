@@ -21,13 +21,14 @@ export interface SearchStats {
 // Type for FileSystemDirectoryHandle with async iterator
 type FileSystemDirectoryHandleWithIterator = FileSystemDirectoryHandle & AsyncIterable<FileSystemHandle>;
 
-// Convert wildcard pattern to regex
+// Convert wildcard pattern to regex (PDF files only)
 function wildcardToRegex(wildcard: string): RegExp {
   const escaped = wildcard
     .replace(/[.+^${}()|[\]\\]/g, '\\$&')
     .replace(/\*/g, '.*')
     .replace(/\?/g, '.');
-  return new RegExp(`^${escaped}$`);
+  // Match pattern anywhere in the filename, but only for PDF files (case-insensitive)
+  return new RegExp(escaped + '.*\\.pdf$', 'i');
 }
 
 // Format file size to human readable format
@@ -78,6 +79,8 @@ async function scanFolder(
 ): Promise<void> {
   const foundFiles: FolderResult['foundFiles'] = [];
 
+  console.log(`Scanning folder: ${fullPath} at depth ${depth}`);
+
   try {
     // Iterate through all entries in this folder
     for await (const entry of (handle as FileSystemDirectoryHandleWithIterator)) {
@@ -87,9 +90,11 @@ async function scanFolder(
       }
 
       if (entry.kind === 'file') {
+        console.log(`  Checking file: ${entry.name}`);
         // Check if filename matches the pattern
         if (pattern.test(entry.name)) {
           const file = await (entry as FileSystemFileHandle).getFile();
+          console.log(`    ✓ Match found: ${entry.name}`);
           foundFiles.push({
             name: entry.name,
             size: file.size,
@@ -97,6 +102,7 @@ async function scanFolder(
           });
         }
       } else if (entry.kind === 'directory') {
+        console.log(`  Found subfolder: ${entry.name}, recursing...`);
         // Recursively scan subdirectories
         const subFolderPath = `${fullPath}/${entry.name}`;
         await scanFolder(
@@ -116,6 +122,8 @@ async function scanFolder(
       foundFiles,
       depth,
     });
+    
+    console.log(`Finished scanning ${fullPath}: Found ${foundFiles.length} matching files`);
   } catch (error) {
     console.error(`Error scanning folder ${fullPath}:`, error);
     results.push({
