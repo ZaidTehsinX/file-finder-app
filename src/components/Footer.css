@@ -1,47 +1,56 @@
 .footer {
   margin-top: auto;
   padding: 2rem 1rem;
-  text-align: center;
-  background: linear-gradient(180deg, transparent, rgba(102, 126, 234, 0.05));
-  border-top: 1px solid rgba(102, 126, 234, 0.1);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.15));
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-content {
   max-width: 800px;
   margin: 0 auto;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 15px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .footer-text {
   margin: 0 0 0.5rem 0;
   font-size: 0.95rem;
-  color: #666;
+  color: #e8e8e8;
   font-weight: 500;
   letter-spacing: 0.3px;
 }
 
 .author-name {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
   font-weight: 700;
+  text-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
 
 .ai-name {
-  color: #667eea;
+  color: #a8d5ff;
   font-weight: 700;
   font-style: italic;
+  text-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .footer-year {
   margin: 0;
   font-size: 0.85rem;
-  color: #999;
+  color: #b0b0b0;
 }
 
 @media (max-width: 600px) {
   .footer {
     padding: 1.5rem 1rem;
+  }
+
+  .footer-content {
+    padding: 1rem;
   }
 
   .footer-text {

@@ -5,14 +5,15 @@ import SearchForm from './components/SearchForm';
 import ResultsDisplay from './components/ResultsDisplay';
 import LoadingAnimation from './components/LoadingAnimation';
 import Footer from './components/Footer';
-import { searchFiles, SearchStats } from './utils/fileSearch';
+import type { SearchStats } from './utils/fileSearch';
+import { searchFiles } from './utils/fileSearch';
 
 function App() {
   const [searchState, setSearchState] = useState<'form' | 'loading' | 'results'>('form');
   const [results, setResults] = useState<SearchStats | null>(null);
   const [searchFilename, setSearchFilename] = useState('');
 
-  const handleSearch = async (filename: string, folders: FileSystemDirectoryHandle[]) => {
+  const handleSearch = async (filename: string, folder: FileSystemDirectoryHandle) => {
     setSearchFilename(filename);
     setSearchState('loading');
 
@@ -20,7 +21,7 @@ function App() {
       // Add a small delay to show the loading animation
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const searchResults = await searchFiles(folders, filename);
+      const searchResults = await searchFiles(folder, filename);
       setResults(searchResults);
       setSearchState('results');
     } catch (error) {
@@ -38,7 +39,7 @@ function App() {
 
   return (
     <div className="app-wrapper">
-      <div className="app-container">
+      <div className="app-content">
         <AnimatedHeading />
 
         <main className="main-content">

@@ -79,20 +79,26 @@ const DetailedListView: React.FC<{ results: SearchStats }> = ({ results }) => {
         </div>
         
         {results.foldersWithFile.length > 0 ? (
-          <div className="folders-grid">
+          <div className="folders-list">
             {results.foldersWithFile.map((folder, index) => (
-              <div key={index} className="folder-card with-file-card">
-                <div className="folder-info">
-                  <p className="folder-path">{folder.folderPath}</p>
-                  <div className="files-in-folder">
+              <div key={index} className="folder-result with-file-result">
+                <div className="folder-path-display">
+                  <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
+                  <span className="folder-path">{folder.folderPath}</span>
+                </div>
+                {folder.foundFiles.length > 0 && (
+                  <div className="files-found">
                     {folder.foundFiles.map((file, fileIndex) => (
-                      <div key={fileIndex} className="file-item">
-                        <span className="file-name">{file.name}</span>
-                        <span className="file-size">{formatFileSize(file.size)}</span>
+                      <div key={fileIndex} className="file-entry">
+                        <span className="file-icon">📄</span>
+                        <span className="file-details">
+                          <span className="file-name">{file.name}</span>
+                          <span className="file-size">{formatFileSize(file.size)}</span>
+                        </span>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
               </div>
             ))}
           </div>
@@ -107,10 +113,13 @@ const DetailedListView: React.FC<{ results: SearchStats }> = ({ results }) => {
         </div>
         
         {results.foldersWithoutFile.length > 0 ? (
-          <div className="folders-grid">
+          <div className="folders-list">
             {results.foldersWithoutFile.map((folder, index) => (
-              <div key={index} className="folder-card without-file-card">
-                <p className="folder-path">{folder.folderPath}</p>
+              <div key={index} className="folder-result without-file-result">
+                <div className="folder-path-display">
+                  <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
+                  <span className="folder-path">{folder.folderPath}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -134,7 +143,8 @@ const CompactView: React.FC<{ results: SearchStats }> = ({ results }) => {
           <ul className="compact-list">
             {results.foldersWithFile.map((folder, index) => (
               <li key={index} className="compact-item with-file">
-                <span className="item-text">{folder.folderPath}</span>
+                <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
+                <span className="item-path">{folder.folderPath}</span>
                 <span className="file-count">
                   {folder.foundFiles.length} file{folder.foundFiles.length !== 1 ? 's' : ''}
                 </span>
@@ -155,7 +165,8 @@ const CompactView: React.FC<{ results: SearchStats }> = ({ results }) => {
           <ul className="compact-list">
             {results.foldersWithoutFile.map((folder, index) => (
               <li key={index} className="compact-item without-file">
-                <span className="item-text">{folder.folderPath}</span>
+                <span className="folder-depth-indicator">{'  '.repeat(folder.depth)}</span>
+                <span className="item-path">{folder.folderPath}</span>
               </li>
             ))}
           </ul>

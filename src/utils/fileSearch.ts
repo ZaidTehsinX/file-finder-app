@@ -1,11 +1,12 @@
-export interface SearchResult {
+export interface FolderResult {
   folderPath: string;
+  hasFile: boolean;
   foundFiles: Array<{
     name: string;
     size: number;
     path: string;
   }>;
-  hasFile: boolean;
+  depth: number; // How deep in the hierarchy
 }
 
 export interface SearchStats {
@@ -13,8 +14,8 @@ export interface SearchStats {
   totalFoldersWithFile: number;
   totalFoldersWithoutFile: number;
   totalFilesFound: number;
-  foldersWithFile: SearchResult[];
-  foldersWithoutFile: SearchResult[];
+  foldersWithFile: FolderResult[];
+  foldersWithoutFile: FolderResult[];
 }
 
 // Type for FileSystemDirectoryHandle with async iterator
@@ -39,17 +40,17 @@ function formatFileSize(bytes: number): string {
 }
 
 export async function searchFiles(
-  folders: FileSystemDirectoryHandle[],
+  folderHandle: FileSystemDirectoryHandle,
   filename: string
 ): Promise<SearchStats> {
   const pattern = wildcardToRegex(filename);
-  const results: SearchResult[] = [];
+  const results: FolderResult[] = [];
+  let totalScanned = 0;
 
-  for (const folder of folders) {
-    const folderResults = await scanFolder(folder, pattern, folder.name);
-    results.push(...folderResults);
-  }
+  // Start recursive scan from depth 0
+  await scanFolder(folderHandle, pattern, folderHandle.name, 0, results);
 
+  totalScanned = results.length;
   const foldersWithFile = results.filter(r => r.hasFile);
   const foldersWithoutFile = results.filter(r => !r.hasFile);
   
@@ -59,7 +60,7 @@ export async function searchFiles(
   );
 
   return {
-    totalFoldersScanned: results.length,
+    totalFoldersScanned: totalScanned,
     totalFoldersWithFile: foldersWithFile.length,
     totalFoldersWithoutFile: foldersWithoutFile.length,
     totalFilesFound,
@@ -71,14 +72,14 @@ export async function searchFiles(
 async function scanFolder(
   handle: FileSystemDirectoryHandle,
   pattern: RegExp,
-  parentPath: string = ''
-): Promise<SearchResult[]> {
-  const results: SearchResult[] = [];
-  const fullPath = parentPath ? `${parentPath}/${handle.name}` : handle.name;
-  const foundFiles: SearchResult['foundFiles'] = [];
+  fullPath: string,
+  depth: number,
+  results: FolderResult[]
+): Promise<void> {
+  const foundFiles: FolderResult['foundFiles'] = [];
 
   try {
-    // Cast to async iterable to access the async iterator
+    // Iterate through all entries in this folder
     for await (const entry of (handle as FileSystemDirectoryHandleWithIterator)) {
       // Skip hidden files/folders
       if (entry.name.startsWith('.')) {
@@ -97,39 +98,33 @@ async function scanFolder(
         }
       } else if (entry.kind === 'directory') {
         // Recursively scan subdirectories
-        const subResults = await scanFolder(
+        const subFolderPath = `${fullPath}/${entry.name}`;
+        await scanFolder(
           entry as FileSystemDirectoryHandle,
           pattern,
-          fullPath
+          subFolderPath,
+          depth + 1,
+          results
         );
-        results.push(...subResults);
       }
     }
 
     // Add this folder to results
-    if (foundFiles.length > 0) {
-      results.push({
-        folderPath: fullPath,
-        foundFiles,
-        hasFile: true,
-      });
-    } else {
-      results.push({
-        folderPath: fullPath,
-        foundFiles: [],
-        hasFile: false,
-      });
-    }
+    results.push({
+      folderPath: fullPath,
+      hasFile: foundFiles.length > 0,
+      foundFiles,
+      depth,
+    });
   } catch (error) {
     console.error(`Error scanning folder ${fullPath}:`, error);
     results.push({
       folderPath: fullPath,
-      foundFiles: [],
       hasFile: false,
+      foundFiles: [],
+      depth,
     });
   }
-
-  return results;
 }
 
 export { formatFileSize };

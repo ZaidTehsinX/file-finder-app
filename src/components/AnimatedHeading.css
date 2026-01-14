@@ -21,33 +21,37 @@
 }
 
 .word {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 8px 16px rgba(102, 126, 234, 0.3));
-  animation: gradientShift 4s ease infinite;
+  color: #ffffff;
+  text-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(102, 126, 234, 0.5);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+  animation: glowPulse 3s ease-in-out infinite;
   position: relative;
+  font-weight: 900;
 }
 
 .file-word {
-  animation: float-up 3s ease-in-out infinite;
+  animation: float-up 3s ease-in-out infinite, glowPulse 3s ease-in-out infinite;
 }
 
 .finder-word {
-  animation: float-down 3s ease-in-out infinite;
+  animation: float-down 3s ease-in-out infinite, glowPulse 3s ease-in-out infinite;
 }
 
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
+@keyframes glowPulse {
+  0%, 100% {
+    text-shadow: 
+      0 4px 15px rgba(0, 0, 0, 0.4),
+      0 2px 8px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(102, 126, 234, 0.5);
   }
   50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+    text-shadow: 
+      0 6px 25px rgba(0, 0, 0, 0.5),
+      0 3px 12px rgba(0, 0, 0, 0.4),
+      0 0 30px rgba(102, 126, 234, 0.7);
   }
 }
 
@@ -70,6 +74,9 @@
 }
 
 .animated-heading:hover .word {
-  filter: drop-shadow(0 12px 24px rgba(102, 126, 234, 0.5));
   animation-duration: 2s;
+  text-shadow: 
+    0 6px 25px rgba(0, 0, 0, 0.5),
+    0 3px 12px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(102, 126, 234, 0.8);
 }
