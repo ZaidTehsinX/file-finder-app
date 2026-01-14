@@ -123,7 +123,7 @@ app.post('/api/scan', async (req, res) => {
 
     res.json({
       success: true,
-      message: `Scan complete: ${totalFiles} PDF files found in ${totalFolders} folders`,
+      message: `Scan complete: ${totalFiles} files found in ${totalFolders} folders`,
       scanId,
       totalFolders,
       totalFiles

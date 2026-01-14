@@ -20,22 +20,21 @@ export async function scanFolderRecursive(folderPath, db, scanId) {
         const fullPath = path.join(dirPath, entry.name);
 
         if (entry.isFile()) {
-          // Only process PDF files
-          if (entry.name.toLowerCase().endsWith('.pdf')) {
-            totalFiles++;
-            try {
-              const stats = fs.statSync(fullPath);
-              fileRecords.push({
-                scanId,
-                fileName: entry.name,
-                filePath: fullPath,
-                fileSize: stats.size,
-                folderPath: dirPath,
-                fileExtension: '.pdf'
-              });
-            } catch (error) {
-              console.error(`Error getting stats for ${fullPath}:`, error.message);
-            }
+          // Process all files (not just PDFs)
+          totalFiles++;
+          try {
+            const stats = fs.statSync(fullPath);
+            const ext = path.extname(entry.name) || 'no-extension';
+            fileRecords.push({
+              scanId,
+              fileName: entry.name,
+              filePath: fullPath,
+              fileSize: stats.size,
+              folderPath: dirPath,
+              fileExtension: ext
+            });
+          } catch (error) {
+            console.error(`Error getting stats for ${fullPath}:`, error.message);
           }
         } else if (entry.isDirectory()) {
           // Recursively scan subdirectories
@@ -90,7 +89,7 @@ export async function searchFiles(db, folderPath, searchTerm) {
 
   const allFolders = new Set(allFoldersResult.map(row => row.folderPath));
 
-  // Search for PDF files matching the search term (case-insensitive)
+  // Search for files matching the search term (case-insensitive)
   const searchPattern = `%${searchTerm.toLowerCase()}%`;
   const files = await db.all(
     `SELECT DISTINCT filePath, fileName, fileSize, folderPath

@@ -58,7 +58,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               disabled={isLoading}
             />
-            <p className="input-hint">Searches for PDF files only. Type filename (e.g., "Return" finds Return 2024.pdf, Return 2025.pdf, etc.)</p>
+            <p className="input-hint">Search all file types. Type filename (e.g., "Return" finds Return 2024.pdf, invoice.xlsx, document.docx, etc.)</p>
           </div>
 
           <div className="folder-selection">
