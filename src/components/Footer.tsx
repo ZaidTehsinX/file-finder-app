@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
     <footer className="footer">
       <div className="footer-content">
         <p className="footer-text">
-          Created by <span className="author-name">Zaid Tehsin</span> with the help of <span className="ai-name">AI</span>
+          Created by <span className="author-name">Zaid Tehsin</span>
         </p>
         
         <div className="tech-icons-footer">
