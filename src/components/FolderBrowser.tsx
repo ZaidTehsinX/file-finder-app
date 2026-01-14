@@ -14,15 +14,44 @@ interface FolderItem {
 
 const FolderBrowser: React.FC<FolderBrowserProps> = ({ onSelectFolder, onClose }) => {
   const [currentPath, setCurrentPath] = useState('');
+  const [pathInput, setPathInput] = useState('');
   const [folders, setFolders] = useState<FolderItem[]>([]);
+  const [drives, setDrives] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPathInput, setShowPathInput] = useState(true);
+  const [showDrives, setShowDrives] = useState(true);
+
+  const fetchDrives = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      console.log('Fetching available drives...');
+      const response = await fetch('http://localhost:3001/api/drives');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Drives received:', data);
+      setDrives(data.drives || []);
+      setShowDrives(true);
+      setCurrentPath('');
+      setFolders([]);
+    } catch (err) {
+      console.error('Error fetching drives:', err);
+      setError((err as Error).message);
+      setDrives(['C:\\', 'D:\\', 'E:\\']);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchFolders = async (path: string) => {
     setLoading(true);
     setError('');
     try {
+      console.log('Fetching folders from:', path);
       const response = await fetch('http://localhost:3001/api/list-dirs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -30,14 +59,18 @@ const FolderBrowser: React.FC<FolderBrowserProps> = ({ onSelectFolder, onClose }
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      setFolders(data.folders);
+      console.log('Folders received:', data);
+      setFolders(data.folders || []);
       setCurrentPath(path);
+      setPathInput(path);
+      setShowDrives(false);
     } catch (err) {
+      console.error('Error fetching folders:', err);
       setError((err as Error).message);
       setFolders([]);
     } finally {
@@ -45,17 +78,19 @@ const FolderBrowser: React.FC<FolderBrowserProps> = ({ onSelectFolder, onClose }
     }
   };
 
-  const handleNavigateToPath = () => {
-    const pathInput = document.getElementById('pathInput') as HTMLInputElement;
-    const path = pathInput?.value?.trim();
+  const handleBrowse = async () => {
+    const path = pathInput?.trim();
     if (path) {
-      fetchFolders(path);
-      setShowPathInput(false);
+      await fetchFolders(path);
     }
   };
 
-  const handleFolderClick = (path: string) => {
-    fetchFolders(path);
+  const handleFolderClick = async (path: string) => {
+    await fetchFolders(path);
+  };
+
+  const handleDriveClick = async (drive: string) => {
+    await fetchFolders(drive);
   };
 
   const handleSelectFolder = () => {
@@ -65,18 +100,23 @@ const FolderBrowser: React.FC<FolderBrowserProps> = ({ onSelectFolder, onClose }
     }
   };
 
-  const handleGoUp = () => {
-    const parts = currentPath.split('\\');
-    parts.pop();
-    const parentPath = parts.join('\\') || 'C:\\';
-    fetchFolders(parentPath);
+  const handleGoUp = async () => {
+    if (!currentPath) return;
+    
+    const parts = currentPath.split('\\').filter(p => p);
+    if (parts.length > 1) {
+      parts.pop();
+      const parentPath = parts.join('\\') + '\\';
+      await fetchFolders(parentPath);
+    } else {
+      // Go back to drives
+      await fetchDrives();
+    }
   };
 
+  // Load drives on mount
   useEffect(() => {
-    // Try to start with common root paths on Windows
-    if (!currentPath && showPathInput) {
-      // Default to a common location or user's home
-    }
+    fetchDrives();
   }, []);
 
   return (
@@ -87,40 +127,53 @@ const FolderBrowser: React.FC<FolderBrowserProps> = ({ onSelectFolder, onClose }
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
 
-        {showPathInput && (
-          <div className="path-input-section">
-            <input
-              id="pathInput"
-              type="text"
-              placeholder="Enter folder path (e.g., C:\Users\YourName\Documents)"
-              className="path-input"
-              onKeyPress={(e) => e.key === 'Enter' && handleNavigateToPath()}
-            />
-            <button onClick={handleNavigateToPath} className="browse-btn">
-              Browse
-            </button>
-          </div>
-        )}
+        <div className="path-input-section">
+          <input
+            type="text"
+            value={pathInput}
+            onChange={(e) => setPathInput(e.target.value)}
+            placeholder="Enter folder path (e.g., C:\Users\YourName\Documents)"
+            className="path-input"
+            onKeyPress={(e) => e.key === 'Enter' && handleBrowse()}
+          />
+          <button onClick={handleBrowse} className="browse-btn">
+            📂 Go
+          </button>
+        </div>
 
-        {currentPath && !showPathInput && (
+        {currentPath && (
           <div className="current-path">
-            <strong>Current Path:</strong> {currentPath}
-            <button onClick={() => setShowPathInput(true)} className="change-path-btn">
-              Change Path
-            </button>
+            <strong>Current:</strong>
+            <span className="path-text">{currentPath}</span>
           </div>
         )}
 
         {error && <div className="error-message">Error: {error}</div>}
 
-        {loading && <div className="loading">Loading folders...</div>}
+        {loading && <div className="loading">Loading...</div>}
 
-        {!loading && folders.length > 0 && (
+        {!loading && showDrives && drives.length > 0 && (
+          <div className="folders-list drives-view">
+            <div className="drives-title">📀 Available Drives</div>
+            {drives.map((drive) => (
+              <div
+                key={drive}
+                className="folder-item drive-item"
+                onClick={() => handleDriveClick(drive)}
+              >
+                <span className="folder-icon">💾</span>
+                <span className="folder-name">{drive}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && !showDrives && folders.length > 0 && (
           <div className="folders-list">
-            {currentPath && currentPath !== 'C:\\' && (
+            {currentPath && (
               <div className="folder-item parent-folder" onClick={handleGoUp}>
-                <span className="folder-icon">📁</span>
-                <span className="folder-name">.. (Parent Folder)</span>
+                <span className="folder-icon">⬆️</span>
+                <span className="folder-name">.. (Back)</span>
               </div>
             )}
             {folders.map((folder) => (
@@ -136,7 +189,7 @@ const FolderBrowser: React.FC<FolderBrowserProps> = ({ onSelectFolder, onClose }
           </div>
         )}
 
-        {!loading && folders.length === 0 && currentPath && (
+        {!loading && !showDrives && folders.length === 0 && currentPath && (
           <div className="no-folders">No subfolders found in this directory</div>
         )}
 
@@ -146,7 +199,7 @@ const FolderBrowser: React.FC<FolderBrowserProps> = ({ onSelectFolder, onClose }
             disabled={!currentPath}
             className="select-btn"
           >
-            Select This Folder
+            ✓ Select This Folder
           </button>
           <button onClick={onClose} className="cancel-btn">
             Cancel

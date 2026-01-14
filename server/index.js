@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 import db from './db.js';
 import { scanFolderRecursive, searchFiles } from './fileScanner.js';
 
@@ -10,6 +11,47 @@ const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Get all available drives
+function getAvailableDrives() {
+  try {
+    // Run 'fsutil fsinfo drives' to get list of drives on Windows
+    const output = execSync('fsutil fsinfo drives', { encoding: 'utf-8' });
+    const drives = [];
+    const lines = output.split('\n');
+    
+    for (const line of lines) {
+      const match = line.match(/([A-Z]:\\)/);
+      if (match) {
+        drives.push(match[1]);
+      }
+    }
+    
+    return drives.length > 0 ? drives : ['C:\\', 'D:\\', 'E:\\', 'F:\\'];
+  } catch (error) {
+    console.error('Error getting drives:', error);
+    return ['C:\\', 'D:\\', 'E:\\', 'F:\\'];
+  }
+}
+
+// Endpoint to list all drives
+app.get('/api/drives', (req, res) => {
+  try {
+    const drives = getAvailableDrives();
+    const availableDrives = drives.filter(drive => {
+      try {
+        return fs.existsSync(drive);
+      } catch {
+        return false;
+      }
+    });
+
+    res.json({ drives: availableDrives });
+  } catch (error) {
+    console.error('Drives error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Endpoint to list directories
 app.post('/api/list-dirs', (req, res) => {
@@ -120,6 +162,7 @@ app.get('/api/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`📁 File Finder Backend running on http://localhost:${PORT}`);
+  console.log(`   List drives: GET http://localhost:${PORT}/api/drives`);
   console.log(`   List dirs: POST http://localhost:${PORT}/api/list-dirs`);
   console.log(`   Scan endpoint: POST http://localhost:${PORT}/api/scan`);
   console.log(`   Search endpoint: POST http://localhost:${PORT}/api/search`);
