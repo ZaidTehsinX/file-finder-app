@@ -10,6 +10,7 @@ export async function scanFolderRecursive(folderPath, db, scanId) {
   async function scanDir(dirPath, depth = 0) {
     try {
       allFoldersSet.add(dirPath);
+      console.log(`Scanning: ${dirPath}`);
       const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
       for (const entry of entries) {
@@ -34,11 +35,13 @@ export async function scanFolderRecursive(folderPath, db, scanId) {
               folderPath: dirPath,
               fileExtension: ext
             });
+            console.log(`Found file: ${entry.name} in ${dirPath}`);
           } catch (error) {
             console.error(`Error getting stats for ${fullPath}:`, error.message);
           }
         } else if (entry.isDirectory()) {
           // Recursively scan subdirectories
+          console.log(`Found subfolder: ${fullPath}`);
           await scanDir(fullPath, depth + 1);
         }
       }
@@ -47,8 +50,10 @@ export async function scanFolderRecursive(folderPath, db, scanId) {
     }
   }
 
+  console.log(`Starting scan of: ${folderPath}`);
   await scanDir(folderPath);
   totalFolders = allFoldersSet.size;
+  console.log(`Total folders scanned: ${totalFolders}, Total files: ${totalFiles}`);
 
   // Batch insert file records
   if (fileRecords.length > 0) {
