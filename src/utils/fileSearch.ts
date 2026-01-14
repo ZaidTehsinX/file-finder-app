@@ -43,7 +43,7 @@ export async function searchFiles(
   const results: SearchResult[] = [];
 
   for (const folder of folders) {
-    const folderResults = await scanFolder(folder, pattern);
+    const folderResults = await scanFolder(folder, pattern, folder.name);
     results.push(...folderResults);
   }
 
@@ -67,9 +67,12 @@ export async function searchFiles(
 
 async function scanFolder(
   handle: FileSystemDirectoryHandle,
-  pattern: RegExp
+  pattern: RegExp,
+  parentPath: string = ''
 ): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
+  const fullPath = parentPath ? `${parentPath}/${handle.name}` : handle.name;
+  const foundFiles: SearchResult['foundFiles'] = [];
 
   try {
     for await (const entry of handle.values()) {
@@ -82,39 +85,44 @@ async function scanFolder(
         // Check if filename matches the pattern
         if (pattern.test(entry.name)) {
           const file = await (entry as FileSystemFileHandle).getFile();
-          results.push({
-            folderPath: handle.name,
-            foundFiles: [
-              {
-                name: entry.name,
-                size: file.size,
-                path: `${handle.name}/${entry.name}`,
-              },
-            ],
-            hasFile: true,
+          foundFiles.push({
+            name: entry.name,
+            size: file.size,
+            path: `${fullPath}/${entry.name}`,
           });
-          return results;
         }
       } else if (entry.kind === 'directory') {
         // Recursively scan subdirectories
         const subResults = await scanFolder(
           entry as FileSystemDirectoryHandle,
-          pattern
+          pattern,
+          fullPath
         );
         results.push(...subResults);
       }
     }
 
-    // If no file was found in this folder tree, add an empty result
-    if (results.length === 0) {
+    // Add this folder to results
+    if (foundFiles.length > 0) {
       results.push({
-        folderPath: handle.name,
+        folderPath: fullPath,
+        foundFiles,
+        hasFile: true,
+      });
+    } else {
+      results.push({
+        folderPath: fullPath,
         foundFiles: [],
         hasFile: false,
       });
     }
   } catch (error) {
-    console.error(`Error scanning folder ${handle.name}:`, error);
+    console.error(`Error scanning folder ${fullPath}:`, error);
+    results.push({
+      folderPath: fullPath,
+      foundFiles: [],
+      hasFile: false,
+    });
   }
 
   return results;
