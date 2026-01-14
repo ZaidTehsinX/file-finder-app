@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
 import db from './db.js';
 import { scanFolderRecursive, searchFiles } from './fileScanner.js';
 
@@ -8,6 +10,42 @@ const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Endpoint to list directories
+app.post('/api/list-dirs', (req, res) => {
+  try {
+    const { path: folderPath } = req.body;
+
+    if (!folderPath) {
+      return res.status(400).json({ error: 'path is required' });
+    }
+
+    // Check if path exists
+    if (!fs.existsSync(folderPath)) {
+      return res.status(404).json({ error: 'Path does not exist' });
+    }
+
+    const stat = fs.statSync(folderPath);
+    if (!stat.isDirectory()) {
+      return res.status(400).json({ error: 'Path is not a directory' });
+    }
+
+    // List subdirectories
+    const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+    const folders = entries
+      .filter(entry => entry.isDirectory() && !entry.name.startsWith('.'))
+      .map(entry => ({
+        name: entry.name,
+        path: path.join(folderPath, entry.name)
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    res.json({ folders });
+  } catch (error) {
+    console.error('List dirs error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Endpoint to scan a folder
 app.post('/api/scan', async (req, res) => {
@@ -21,23 +59,23 @@ app.post('/api/scan', async (req, res) => {
     console.log(`Scanning folder: ${folderPath}`);
 
     // Check if we already have a scan for this folder
-    let scan = db.prepare('SELECT id FROM scans WHERE folderPath = ?').get(folderPath);
+    let scan = await db.get('SELECT id FROM scans WHERE folderPath = ?', [folderPath]);
     
     if (scan) {
       // Delete old scan and files
-      db.prepare('DELETE FROM scans WHERE id = ?').run(scan.id);
+      await db.run('DELETE FROM scans WHERE id = ?', [scan.id]);
     }
 
     // Create new scan
-    const result = db.prepare('INSERT INTO scans (folderPath) VALUES (?)').run(folderPath);
-    const scanId = result.lastInsertRowid;
+    const result = await db.run('INSERT INTO scans (folderPath) VALUES (?)', [folderPath]);
+    const scanId = result.lastID;
 
     // Scan the folder recursively
     const { totalFolders, totalFiles } = await scanFolderRecursive(folderPath, db, scanId);
 
     // Update scan record with totals
-    db.prepare('UPDATE scans SET totalFolders = ?, totalFiles = ? WHERE id = ?')
-      .run(totalFolders, totalFiles, scanId);
+    await db.run('UPDATE scans SET totalFolders = ?, totalFiles = ? WHERE id = ?',
+      [totalFolders, totalFiles, scanId]);
 
     res.json({
       success: true,
@@ -53,7 +91,7 @@ app.post('/api/scan', async (req, res) => {
 });
 
 // Endpoint to search files
-app.post('/api/search', (req, res) => {
+app.post('/api/search', async (req, res) => {
   try {
     const { folderPath, searchTerm } = req.body;
 
@@ -63,7 +101,7 @@ app.post('/api/search', (req, res) => {
 
     console.log(`Searching for "${searchTerm}" in ${folderPath}`);
 
-    const results = searchFiles(db, folderPath, searchTerm);
+    const results = await searchFiles(db, folderPath, searchTerm);
 
     res.json({
       success: true,
@@ -82,6 +120,7 @@ app.get('/api/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`📁 File Finder Backend running on http://localhost:${PORT}`);
+  console.log(`   List dirs: POST http://localhost:${PORT}/api/list-dirs`);
   console.log(`   Scan endpoint: POST http://localhost:${PORT}/api/scan`);
   console.log(`   Search endpoint: POST http://localhost:${PORT}/api/search`);
 });
