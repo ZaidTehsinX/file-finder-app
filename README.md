@@ -1,73 +1,71 @@
-# React + TypeScript + Vite
+File Finder is designed to solve a common problem: **finding files in a massive file system**. Instead of manually navigating through dozens of nested folders, users can now search for any file by name and get instant results.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### **Real-World Use Cases:**
 
-Currently, two official plugins are available:
+1. **Office Workers**
+   - Finding old project documents scattered across network drives
+   - Locating invoices, contracts, or reports by name
+   - Searching for presentations from specific clients or time periods
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+2. **Developers**
+   - Finding configuration files across multiple projects
+   - Locating specific source code files in large repositories
+   - Discovering images, assets, or resources used in projects
 
-## React Compiler
+3. **Content Creators**
+   - Finding photos and videos from specific shoots or dates
+   - Locating music files for specific projects
+   - Organizing media across multiple hard drives
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+4. **General Users**
+   - Finding documents they saved but forgot where
+   - Locating backup files or archives
+   - Searching for specific file types (all PDFs, all images, etc.)
 
-## Expanding the ESLint configuration
+### **Key Problems It Solves:**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- ❌ **Problem**: Manually browsing 50+ nested folders to find one file
+- ✅ **Solution**: Type filename → Search → Get instant results
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- ❌ **Problem**: Searching only works by file type, not content
+- ✅ **Solution**: Search by any filename pattern across all file types
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- ❌ **Problem**: Results show every file, making it hard to understand where they are
+- ✅ **Solution**: Results organized by folder location with clear grouping
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- ❌ **Problem**: Re-scanning the same folder multiple times is slow
+- ✅ **Solution**: Database caches scan results for instant future searches
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### **Why File Finder is Better:**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Feature | Windows Explorer | File Finder |
+|---------|-----------------|------------|
+| **Recursive Search** | Limited, slow | ✅ Fast, comprehensive |
+| **All File Types** | ✅ Yes | ✅ Yes |
+| **Folder Organization** | Files listed in random order | ✅ Grouped by folder |
+| **Multiple Drives** | One at a time | ✅ All drives supported |
+| **Search Caching** | No | ✅ Database persistence |
+| **Modern UI** | Traditional | ✅ Animated, modern |
+| **Easy to Use** | Multiple clicks required | ✅ Simple 3-step process |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🛠️ Technologies Used
+
+### **Frontend Stack**
+- **React 18.2.0** - UI library for building interactive components
+- **TypeScript 5.3.3** - Adds type safety to JavaScript
+- **Vite 7.3.1** - Fast development server and build tool
+- **CSS3** - Modern styling with gradients, animations, and flexbox
+- **Tailwind CSS** - Utility-first CSS framework (referenced)
+
+### **Backend Stack**
+- **Node.js** - JavaScript runtime for server
+- **Express.js 4.18.2** - Web framework for REST API
+- **SQLite3** - Lightweight database for storing scan results
+- **File System APIs** - Native Node.js modules for file operations
+
+### **Development Tools**
+- **Git** - Version control
+- **npm** - Package manager
+- **CORS** - Enable cross-origin requests between frontend and backend
